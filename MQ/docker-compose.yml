@@ -1,0 +1,120 @@
+version: '2.1'
+
+services:
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:v0.7.2
+    ports:
+      - 8080:8080
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+
+  zookeep1:
+    image: zookeeper:3.4.14
+    hostname: zookeep1
+    ports:
+      - "2181:2181"
+    environment:
+        ZOO_MY_ID: 1
+        ZOO_PORT: 2181
+        ZOO_SERVERS: server.1=zookeep1:2888:3888 server.2=zookeep2:2888:3888 server.3=zookeep3:2888:3888
+    volumes:
+      - ./zookeep1/data:/data
+      - ./zookeep1/datalog:/datalog
+    depends_on:
+      - kafka-ui
+
+  zookeep2:
+    image: zookeeper:3.4.14
+    hostname: zookeep2
+    ports:
+      - "2182:2182"
+    environment:
+        ZOO_MY_ID: 2
+        ZOO_PORT: 2182
+        ZOO_SERVERS: server.1=zookeep1:2888:3888 server.2=zookeep2:2888:3888 server.3=zookeep3:2888:3888
+    volumes:
+      - ./zookeep2/data:/data
+      - ./zookeep2/datalog:/datalog
+    depends_on:
+      - kafka-ui
+
+  zookeep3:
+    image: zookeeper:3.4.14
+    hostname: zookeep3
+    ports:
+      - "2183:2183"
+    environment:
+        ZOO_MY_ID: 3
+        ZOO_PORT: 2183
+        ZOO_SERVERS: server.1=zookeep1:2888:3888 server.2=zookeep2:2888:3888 server.3=zookeep3:2888:3888
+    volumes:
+      - ./zookeep3/data:/data
+      - ./zookeep3/datalog:/datalog
+    depends_on:
+      - kafka-ui
+
+  kafka1:
+    image: confluentinc/cp-kafka:7.5.0
+    hostname: kafka1
+    ports:
+      - "9092:9092"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://host.docker.internal:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeep1:2181,zookeep2:2182,zookeep3:2183"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+    volumes:
+      - ./kafka1/data:/var/lib/kafka/data
+    depends_on:
+      - zookeep1
+      - zookeep2
+      - zookeep3
+
+  kafka2:
+    image: confluentinc/cp-kafka:7.5.0
+    hostname: kafka2
+    ports:
+      - "9093:9093"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka2:19093,LISTENER_DOCKER_EXTERNAL://host.docker.internal:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeep1:2181,zookeep2:2182,zookeep3:2183"
+      KAFKA_BROKER_ID: 2
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+    volumes:
+      - ./kafka2/data:/var/lib/kafka/data
+    depends_on:
+      - zookeep1
+      - zookeep2
+      - zookeep3
+
+  kafka3:
+    image: confluentinc/cp-kafka:7.5.0
+    hostname: kafka3
+    ports:
+      - "9094:9094"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka3:19094,LISTENER_DOCKER_EXTERNAL://host.docker.internal:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeep1:2181,zookeep2:2182,zookeep3:2183"
+      KAFKA_BROKER_ID: 3
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+    volumes:
+      - ./kafka3/data:/var/lib/kafka/data
+    depends_on:
+      - zookeep1
+      - zookeep2
+      - zookeep3
