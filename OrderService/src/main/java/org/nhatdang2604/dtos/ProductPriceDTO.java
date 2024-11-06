@@ -6,4 +6,5 @@ public record ProductPriceDTO(
         Long id,
         BigDecimal price
 ) {
+    //Do nothing
 }

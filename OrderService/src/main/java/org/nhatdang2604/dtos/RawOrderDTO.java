@@ -5,4 +5,5 @@ import java.util.List;
 public record RawOrderDTO(
         List<RawOrderItemDTO> items
 ) {
+    //Do nothing
 }
